@@ -50,10 +50,10 @@ class clifford_simulator:
         self.tableau[:,qubit_index+self.n] = temp_row
         self.r_update(qubit_index)
 
-    # X->Y, Y->-Z
+    # X->Y, Y->-X, Z->Z
     def s(self, qubit_index):
         self.r_update(qubit_index)
-        self.tableau[:,qubit_index] ^= self.tableau[:,qubit_index+self.n]
+        self.tableau[:,qubit_index+self.n] ^= self.tableau[:,qubit_index]
 
     # control qubit의 stabilizer와 target qubit의 stabilizer의 parity를 확인하여 target qubit의 상태를 결정한다.
     def cx(self, c, t):
@@ -74,7 +74,7 @@ class clifford_simulator:
         self.cx(c,t)
         self.h(t)
 
-    # 계산에 사용되는 함수
+    # 계산에 사용되는 함수, Pauli 행렬로 표현된 x_1z_1, x_2z_2의 행렬 곱의 계수를 i의 거듭제곱으로 표현할 경우 그 지수.
     def g_function(self, x_1, z_1, x_2, z_2):
         if x_1 == 0 and z_1 == 0:
             return 0
@@ -97,10 +97,7 @@ class clifford_simulator:
             self.r[h] = 0
         elif checker == 2:
             self.r[h] =1
-        else:
-            print(checker, h, i)#'something goes wrong')
         self.tableau[h, :] ^= self.tableau[i, :]
-
     # deterministic measure를 위해서 추가적인 row를 붙였다가 없애주는 계산
     @contextmanager
     def merging_and_explit(self):

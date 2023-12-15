@@ -4,11 +4,13 @@ from qiskit_aer.primitives import Sampler
 from clifford_circuit import clifford_simulator
 
 class simulation_sampler:
-
-    def __init__(self, circuit_fun, simulator_name, num_qubit, shot):
-        self.n = num_qubit
+    """
+    Clifford simulator와 qiskit simulator에 대해서 measurement sampling을 진행
+    """
+    def __init__(self, circuit_class, simulator_name, shot):
+        self.n = circuit_class.num_qubit
+        self.circuit_fun = circuit_class.function
         self.circ = getattr(self, simulator_name+'_simulation')
-        self.circuit_fun = circuit_fun
         self.result = getattr(self, simulator_name+'_sampler')(shot)
 
     def clifford_simulation(self):
@@ -28,13 +30,15 @@ class simulation_sampler:
                 result_dic[str(result)] += 1
             except:
                 result_dic[str(result)] = 1
-        
-        return result_dic
+        result_dict = {key: value / shot for key, value in result_dic.items()}
+
+        return result_dict
     
+    # qiskit을 사용한 sampling
     def qiskit_sampler(self, shot):
         sampler = Sampler()
-        circuit = self.circuit_fun(circ = self.circ())
-        result_dic = sampler.run(circuit, shot=shot).result().quasi_dists[0]
+        self.circuit = self.circuit_fun(circ = self.circ())
+        result_dic = sampler.run(self.circuit, shot=shot).result().quasi_dists[0].binary_probabilities()
         return result_dic
 
     def get_result(self):
